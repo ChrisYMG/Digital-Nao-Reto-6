@@ -1,26 +1,30 @@
-// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const restaurantRoutes = require('./routes/restaurant');
+const userRoutes = require('./routes/RoutesUsers');
+const restaurantRoutes = require('./routes/RoutesRestaurants');
+
+require('dotenv').config();
 
 const app = express();
-const port = 3000;
-
-// Middleware
 app.use(bodyParser.json());
 
-// MongoDB connection
-mongoose.connect('mongodb://localhost:27017/Tattler', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected...'))
-.catch(err => console.log(err));
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Routes
+mongoose.connection.on('connected', () => {
+  console.log('Successfully connected to MongoDB');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('Error connecting to MongoDB:', err);
+});
+
+// Use user routes
+app.use('/users', userRoutes);
 app.use('/restaurants', restaurantRoutes);
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
